@@ -1,0 +1,46 @@
+version = "1.0"
+
+[metadata]
+author_name = "Joan Cabezas"
+author_email = "joan.santiago.cabezas@gmail.com"
+author_organization = "Abundant AI"
+difficulty = "expert"
+category = "ml-training"
+tags = ["llm", "transformer", "bpe", "pretraining", "cs336", "from-scratch"]
+description = "Implement Stanford CS336 Assignment 1 from scratch: BPE tokenizer, transformer model (RMSNorm, RoPE, SwiGLU, MHA), AdamW, gradient clipping, LR schedule, data loader, and checkpointing — pass the course unit tests."
+
+difficulty_explanation = "The agent must build a working GPT-2-style transformer plus a BPE tokenizer entirely from primitives. ~30 adapter functions span tokenizer training, attention with RoPE, pre-norm transformer blocks, cross-entropy, AdamW, gradient clipping, cosine LR schedule, checkpoint save/load, and a streaming dataloader. Test fixtures include a reference BPE trained on corpus.en and numerical snapshots for every module; correctness requires matching both algorithmic behavior and exact numerical outputs within tight tolerances."
+
+solution_explanation = "Oracle overlays a completed solution (src/ package with models.tokenizer, models.transformer, train.tokenizer, utils) over the starter workspace and adapts tests/adapters.py to route every adapter call to the corresponding implementation."
+
+verification_explanation = "Verifier overlays a pristine trusted copy of tests/ on top of the agent workspace (preserving only the agent's tests/adapters.py) and runs pytest. Binary reward: 1.0 iff pytest exits 0 (all tests pass), else 0.0."
+
+expert_time_estimate_hours = 40.0
+
+[verifier]
+timeout_sec = 1800.0
+
+[agent]
+timeout_sec = 36000.0
+
+[environment]
+docker_image = "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404"
+gpus = 1
+gpu_types = ["H100"]
+cpus = 8
+memory_mb = 32768
+storage_mb = 51200
+build_timeout_sec = 1800.0
+allow_internet = true
+
+[[artifacts]]
+source = "/app"
+destination = "workspace"
+
+[[artifacts]]
+source = "/logs/verifier/metrics.json"
+destination = "metrics"
+
+[[artifacts]]
+source = "/logs/verifier/pytest.log"
+destination = "pytest_log"

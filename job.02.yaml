@@ -1,0 +1,29 @@
+n_attempts: 1
+agent_setup_timeout_multiplier: 3
+
+orchestrator:
+  n_concurrent_trials: 1
+
+tasks:
+  - path: assignment-02
+
+agents:
+  - name: oracle
+  - name: nop
+
+environment:
+  type: runpod
+  delete: true
+  kwargs:
+    cloud_type: SECURE
+    container_disk_in_gb: 100
+    gpu_type: H100
+    timeout: 14400
+
+artifacts:
+  - source: /app
+    destination: workspace
+  - source: /logs/verifier/metrics.json
+    destination: metrics
+  - source: /logs/verifier/pytest.log
+    destination: pytest_log

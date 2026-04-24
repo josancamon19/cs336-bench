@@ -1,0 +1,46 @@
+version = "1.0"
+
+[metadata]
+author_name = "Joan Cabezas"
+author_email = "joan.santiago.cabezas@gmail.com"
+author_organization = "Abundant AI"
+difficulty = "expert"
+category = "ml-training"
+tags = ["llm", "alignment", "sft", "dpo", "grpo", "rlhf", "cs336"]
+description = "Stanford CS336 Assignment 5 (Alignment): implement SFT, DPO, and GRPO training loops plus the associated data pipelines, metrics, and expert-iteration utilities — pass the course unit tests."
+
+difficulty_explanation = "Agent must implement: a supervised fine-tuning loop with masking, chat-template packing and log-prob utilities; a DPO reference/policy log-ratio loss and per-sequence metrics; a GRPO actor-critic-style group-relative policy-gradient loss with advantage normalization and per-group length/reward statistics; and the data-loading + metric-reporting plumbing that every loop shares."
+
+solution_explanation = "Oracle overlays a completed solution (src/b_sft, src/g_dpo, src/d_grpo, src/drgrpo_grader, src/a_eval, ...) over the starter workspace."
+
+verification_explanation = "Verifier overlays a pristine trusted copy of tests/ onto the agent workspace (keeping only tests/adapters.py) and runs pytest. Binary reward: 1.0 iff pytest exit==0, else 0.0."
+
+expert_time_estimate_hours = 60.0
+
+[verifier]
+timeout_sec = 1800.0
+
+[agent]
+timeout_sec = 36000.0
+
+[environment]
+docker_image = "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404"
+gpus = 1
+gpu_types = ["H100"]
+cpus = 8
+memory_mb = 32768
+storage_mb = 102400
+build_timeout_sec = 3600.0
+allow_internet = true
+
+[[artifacts]]
+source = "/app"
+destination = "workspace"
+
+[[artifacts]]
+source = "/logs/verifier/metrics.json"
+destination = "metrics"
+
+[[artifacts]]
+source = "/logs/verifier/pytest.log"
+destination = "pytest_log"

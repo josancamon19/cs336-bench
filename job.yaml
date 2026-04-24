@@ -1,0 +1,40 @@
+n_attempts: 1
+agent_setup_timeout_multiplier: 3
+
+orchestrator:
+  n_concurrent_trials: 1
+
+tasks:
+  - path: assignment-01
+
+agents:
+  # Oracle should get reward 1.0 — overlays the reference solution onto /app
+  # and runs the pytest suite.
+  - name: oracle
+
+  # Nop should get reward 0.0 — agent does nothing, so tests/adapters.py
+  # remains full of `raise NotImplementedError` and every test fails.
+  - name: nop
+
+  # Uncomment to run a real agent:
+  # - name: claude-code
+  #   model_name: global.anthropic.claude-opus-4-7-v1
+  #   env:
+  #     CLAUDE_CODE_MAX_OUTPUT_TOKENS: "65536"
+
+environment:
+  type: runpod
+  delete: true
+  kwargs:
+    cloud_type: SECURE
+    container_disk_in_gb: 100
+    gpu_type: H100
+    timeout: 14400
+
+artifacts:
+  - source: /app
+    destination: workspace
+  - source: /logs/verifier/metrics.json
+    destination: metrics
+  - source: /logs/verifier/pytest.log
+    destination: pytest_log

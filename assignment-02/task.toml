@@ -1,0 +1,46 @@
+version = "1.0"
+
+[metadata]
+author_name = "Joan Cabezas"
+author_email = "joan.santiago.cabezas@gmail.com"
+author_organization = "Abundant AI"
+difficulty = "expert"
+category = "ml-systems"
+tags = ["llm", "systems", "flash-attention", "triton", "ddp", "cs336", "from-scratch"]
+description = "Stanford CS336 Assignment 2 (Systems): implement a FlashAttention-2 forward+backward in Triton, DDP with overlap, and a ZeRO-1 sharded optimizer — pass the course unit tests."
+
+difficulty_explanation = "Agent must write a correct and reasonably performant Triton kernel implementation of FlashAttention-2 (forward + backward, causal + non-causal), a distributed data-parallel wrapper with flat-bucket communication/compute overlap, an individual-parameter DDP variant, and a ZeRO-stage-1 sharded optimizer. Tests compare against PyTorch reference outputs with tight numerical tolerances."
+
+solution_explanation = "Oracle overlays a completed solution (src/flash_triton, src/distributed, src/flash_torch.py) over the starter workspace."
+
+verification_explanation = "Verifier overlays a pristine trusted copy of tests/ onto the agent workspace (keeping only tests/adapters.py) and runs pytest. Binary reward: 1.0 iff pytest exit==0, else 0.0. Note: DDP tests spawn multiple processes; with a single GPU they run on CPU tensors."
+
+expert_time_estimate_hours = 40.0
+
+[verifier]
+timeout_sec = 1800.0
+
+[agent]
+timeout_sec = 36000.0
+
+[environment]
+docker_image = "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404"
+gpus = 1
+gpu_types = ["H100"]
+cpus = 8
+memory_mb = 32768
+storage_mb = 51200
+build_timeout_sec = 1800.0
+allow_internet = true
+
+[[artifacts]]
+source = "/app"
+destination = "workspace"
+
+[[artifacts]]
+source = "/logs/verifier/metrics.json"
+destination = "metrics"
+
+[[artifacts]]
+source = "/logs/verifier/pytest.log"
+destination = "pytest_log"

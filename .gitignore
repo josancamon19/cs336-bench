@@ -1,0 +1,27 @@
+# Secrets — NEVER commit
+.env
+.env.local
+
+# Python / build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# Editor
+.DS_Store
+.idea/
+.vscode/
+
+# Job output (harbor run dirs)
+jobs/
+logs/
+runs/
+
+# Large cached artifacts that should be regenerated
+.tokenizer/
+wandb/
