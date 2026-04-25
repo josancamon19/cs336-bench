@@ -1,3 +1,6 @@
 import importlib.metadata
 
-__version__ = importlib.metadata.version("src")
+try:
+    __version__ = importlib.metadata.version("src")
+except importlib.metadata.PackageNotFoundError:
+    __version__ = "0.0.0"

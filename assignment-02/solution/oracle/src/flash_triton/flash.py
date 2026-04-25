@@ -1,7 +1,11 @@
+import math
+
 import torch
 from src.flash_triton.triton_forward import flash_forward
 from src.flash_triton.triton_backward_2 import flash_backward_pass2_grad_kv, flash_backward_pass1_grad_q
 import triton
+
+_LN2 = math.log(2.0)
 
 
 # Set up TMA allocator for Triton 3.4.0 TMA functionality
@@ -71,6 +75,9 @@ class FlashAttention(torch.autograd.Function):
         #     o = o.reshape(batch_size, num_heads, seq_length, d)
         #     l = l.reshape(batch_size, num_heads, seq_length)
 
+        # The triton kernel stores LSE in base-2 (for exp2 performance); the
+        # reference test expects natural log. Convert once here.
+        l = l * _LN2
         ctx.save_for_backward(q, k, v, o, l)
         ctx.is_causal = is_causal
         # pdb.set_trace()
@@ -79,6 +86,9 @@ class FlashAttention(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad_out):
         q, k, v, o, l = ctx.saved_tensors
+        # l was converted to natural log in forward() for test compatibility;
+        # the backward kernel uses exp2 and needs the log2 form.
+        l = l / _LN2
         D = torch.sum(o * grad_out, dim=-1)
         # D = element_wise_mul_sum_fn(o, grad_out)
         grad_out = grad_out.contiguous()
