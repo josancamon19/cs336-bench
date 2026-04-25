@@ -19,6 +19,9 @@ _A = TypeVar("_A", np.ndarray, Tensor)
 
 def _canonicalize_array(arr: _A) -> np.ndarray:
     if isinstance(arr, Tensor):
+        # .numpy() does not support bf16/fp16 — upcast first.
+        if arr.dtype in (torch.bfloat16, torch.float16):
+            arr = arr.float()
         arr = arr.detach().cpu().numpy()
     return arr
 

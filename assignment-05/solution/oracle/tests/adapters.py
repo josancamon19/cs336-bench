@@ -3,28 +3,28 @@ from __future__ import annotations
 import os
 from typing import Any, Callable, Literal
 
-from src.f_part2_sft import UltraChatDataset
 import torch
 from torch import Tensor
 from torch.utils.data import Dataset
 from transformers import PreTrainedTokenizerBase
-from src.d_grpo import (
-    compute_group_normalized_rewards,
-    compute_naive_policy_gradient_loss,
-    compute_grpo_clip_loss,
-    compute_policy_gradient_loss,
-    masked_mean,
-    grpo_microbatch_train_step,
-)
+
 from src.b_sft import (
-    tokenize_prompt_and_output,
     compute_entropy,
     get_response_log_probs,
     masked_normalize,
     sft_microbatch_train_step,
+    tokenize_prompt_and_output,
 )
-
+from src.d_grpo import (
+    compute_group_normalized_rewards,
+    compute_grpo_clip_loss,
+    compute_naive_policy_gradient_loss,
+    compute_policy_gradient_loss,
+    grpo_microbatch_train_step,
+    masked_mean,
+)
 from src.e_part2_baselines import extract_answer_letter, extract_final_number
+from src.f_part2_sft import UltraChatDataset
 
 
 def run_tokenize_prompt_and_output(
@@ -324,7 +324,7 @@ def run_masked_normalize(
 
 
 """
-The below adapters are used in the optional 
+The below adapters are used in the optional
 RLHF / safety part of the Alignment assignment.
 """
 
@@ -379,7 +379,14 @@ def run_iterate_batches(
     Returns:
         Iterable over batches, where each batch has size `batch_size`.
     """
-    raise NotImplementedError
+    from torch.utils.data import DataLoader
+
+    return DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        drop_last=False,
+    )
 
 
 def run_parse_mmlu_response(

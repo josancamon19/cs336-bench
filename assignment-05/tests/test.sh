@@ -34,8 +34,13 @@ rm -f "$AGENT_ADAPTERS_BACKUP"
 
 cd "$WORKSPACE"
 set +e
-python3 -m pytest tests/ \
+# `-u` (unbuffered) + `-v` (verbose) so each test name streams to the log
+# the moment it starts, so a hang is debuggable. `--timeout=300` kills any
+# individual test stuck for more than 5 minutes (pytest-timeout).
+PYTHONUNBUFFERED=1 python3 -u -m pytest tests/ \
+    -v \
     --tb=short \
+    --timeout=300 \
     --json-report \
     --json-report-file="$LOGS_DIR/pytest_report.json" \
     2>&1 | tee "$LOGS_DIR/pytest.log"

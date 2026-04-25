@@ -44,16 +44,21 @@ class UltraChatDataset(Dataset):
         if shuffle:
             random.shuffle(self.dataset)
 
+        # Each document boundary gets both BOS and EOS. We pass
+        # `add_special_tokens=False` below because we're inserting BOS
+        # manually — otherwise the tokenizer only prepends one BOS for the
+        # whole stream, and the LM never learns sequence start within a pack.
+        bos = tokenizer.bos_token or ""
+        eos = tokenizer.eos_token or ""
         contents = ""
-        for i, item in enumerate(self.dataset):
-            print("loading_item")
+        for item in self.dataset:
             prompt = self.prompt_template.format(
                 instruction=item["prompt"], response=item["response"]
             )
-            contents += prompt + tokenizer.eos_token
+            contents += bos + prompt + eos
 
         self.tokenized = self.tokenizer.encode(
-            contents, padding=False, return_tensors="pt", add_special_tokens=True
+            contents, padding=False, return_tensors="pt", add_special_tokens=False
         )[0]
 
         self.count = (len(self.tokenized) - 1) // self.seq_length

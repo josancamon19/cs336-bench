@@ -23,13 +23,40 @@ uv pip install --system --no-cache \
     accelerate transformers datasets evaluate \
     einops einx jaxtyping numpy psutil pytest regex tqdm \
     tokenizers pyarrow setuptools wandb typer pylatexenc xopen \
-    pytest-json-report
+    pytest-json-report \
+    pytest-timeout
 
-# Flash-attn and vLLM — pin to versions that support torch 2.8. Build of
-# flash-attn is heavy; skip build isolation so it uses the already-installed
-# torch.
-uv pip install --system --no-cache --no-build-isolation flash-attn
-uv pip install --system --no-cache vllm
+# vLLM and flash-attn are imported by the oracle's training scripts but never
+# CALLED by the adapter tests. Installing real vLLM (5-10 min cold + ~10GB
+# disk) only to satisfy import statements would blow the verifier budget.
+# Instead, drop a minimal stub package on the path so every `from vllm
+# import ...` succeeds; the stubbed classes raise if anyone actually tries
+# to use them.
+STUB_DIR="$(python3 -c 'import site; print(site.getsitepackages()[0])')/vllm"
+mkdir -p "$STUB_DIR"
+cat > "$STUB_DIR/__init__.py" <<'PY'
+class LLM:
+    def __init__(self, *a, **k): pass
+    def generate(self, *a, **k):
+        raise RuntimeError("vllm stub: LLM.generate is not available in the test environment")
+class SamplingParams:
+    def __init__(self, *a, **k): pass
+PY
+cat > "$STUB_DIR/sampling_params.py" <<'PY'
+class SamplingParams:
+    def __init__(self, *a, **k): pass
+class GuidedDecodingParams:
+    def __init__(self, *a, **k): pass
+PY
+mkdir -p "$STUB_DIR/model_executor"
+cat > "$STUB_DIR/model_executor/__init__.py" <<'PY'
+def set_random_seed(seed): pass
+PY
+
+# Note: we deliberately do NOT stub flash_attn. transformers probes for it at
+# import time and breaks if a partial stub is found; better to leave it absent
+# so transformers' own absence detection takes over. The oracle source doesn't
+# import flash_attn directly, only its pyproject lists it as a dep.
 
 # math-verify, alpaca-eval (test deps)
 uv pip install --system --no-cache "math-verify[antlr4-13-2]" alpaca-eval || true
